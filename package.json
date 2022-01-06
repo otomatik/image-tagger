@@ -33,6 +33,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.11.4",
+    "@babel/helper-builder-react-jsx": "7.16.7",
+    "@babel/helper-builder-react-jsx-experimental": "7.12.11",
     "@babel/preset-typescript": "^7.10.4",
     "@storybook/addon-essentials": "6.4.9",
     "@storybook/react": "6.4.9",
@@ -58,6 +60,6 @@
     "lint-staged": "^10.2.11",
     "plop": "^2.7.4",
     "prettier": "^2.1.1",
-    "typescript": "^4.0.2"
+    "typescript": "^4.5.4"
   }
 }

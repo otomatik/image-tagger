@@ -9,6 +9,8 @@ import ResizableRect from 'react-resizable-rotatable-draggable'
 
 import * as S from './styles'
 
+import DescriptionInput from '../DescriptionInput'
+
 export interface Zone {
   left: number
   top: number
@@ -40,6 +42,7 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
     right: 0,
     bottom: 0
   })
+  const [pendingDescription, setPendingDescription] = useState<string>('')
 
   const createZone = (event: MouseEvent<HTMLElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect()
@@ -74,11 +77,16 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
     })
   }
 
+  const addTag = (tag: Tag) => {
+    updateTags([...tags, tag])
+  }
+
   const editTag = (event: MouseEvent, index: number) => {
     if (!tags[index]) {
       return
     }
     const tag = tags[index]
+    setPendingDescription(tag.description)
     setZone({ ...tag.zone })
     removeTag(event, index)
   }
@@ -89,6 +97,18 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
     }
     tags.splice(index, 1)
     updateTags([...tags])
+  }
+
+  const confirmDescription = () => {
+    if (zone?.width > 0 && zone?.height > 0) {
+      addTag({ description: pendingDescription, zone })
+      reset()
+    }
+  }
+
+  const reset = () => {
+    setZone({ width: 0, height: 0, top: 0, left: 0 })
+    setPendingDescription('')
   }
 
   const setBoundingClientRect = ({
@@ -154,6 +174,15 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
           </S.Tag>
         ))}
       </S.Tagger>
+      {image === '' ? null : (
+        <DescriptionInput
+          value={pendingDescription}
+          onChange={setPendingDescription}
+          onConfirm={confirmDescription}
+          onCancel={reset}
+          disabled={zone.width === 0 && zone.height === 0}
+        />
+      )}
     </S.Wrapper>
   )
 }

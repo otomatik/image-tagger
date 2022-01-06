@@ -17,6 +17,19 @@ describe('<ImgTagger />', () => {
 
     const zone = screen.getByTestId('zone-to-tag')
     expect(zone).toBeInTheDocument()
+
+    // adding a description and validating it
+    const input = screen.getByTestId('description-input')
+    userEvent.type(input, 'desc')
+    const tagBtn = screen.getByTestId('tag-button')
+    tagBtn.click()
+
+    expect(callback).toHaveBeenCalledWith([
+      {
+        description: 'desc',
+        zone: { height: 60, left: -60, top: -60, width: 60 }
+      }
+    ])
   })
 
   it('should remove it when clicking on the remove button', () => {

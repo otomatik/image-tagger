@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-iceberg-starter",
+  "name": "image-tagger",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -34,8 +34,8 @@
   "devDependencies": {
     "@babel/core": "^7.11.4",
     "@babel/preset-typescript": "^7.10.4",
-    "@storybook/addon-essentials": "6.0.16",
-    "@storybook/react": "6.0.16",
+    "@storybook/addon-essentials": "6.4.9",
+    "@storybook/react": "6.4.9",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^10.4.9",
     "@types/jest": "^26.0.10",
@@ -51,6 +51,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-react-hooks": "^4.1.0",
+    "eslint-plugin-storybook": "0.5.5",
     "husky": "^4.2.5",
     "jest": "^26.4.2",
     "jest-styled-components": "^7.0.3",

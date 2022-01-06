@@ -5,3 +5,7 @@ export const Wrapper = styled.main`
   height: 100%;
   padding: 5rem;
 `
+
+export const Head = styled.div`
+  display: flex;
+`

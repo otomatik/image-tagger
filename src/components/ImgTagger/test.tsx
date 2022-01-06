@@ -1,16 +1,66 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
 import ImgTagger from '.'
 
 describe('<ImgTagger />', () => {
   it('should create a tag zone when clicking on the image', () => {
-    render(<ImgTagger image="fake image" />)
+    const callback = jest.fn()
+
+    render(<ImgTagger tags={[]} image="fake image" updateTags={callback} />)
 
     const image = screen.getByRole('img')
     expect(image).toBeInTheDocument()
 
     // create a tag zone
     image.click()
+
+    const zone = screen.getByTestId('zone-to-tag')
+    expect(zone).toBeInTheDocument()
+  })
+
+  it('should remove it when clicking on the remove button', () => {
+    const callback = jest.fn()
+
+    render(
+      <ImgTagger
+        tags={[
+          {
+            description: 'to remove',
+            zone: { top: 0, left: 0, width: 10, height: 20 }
+          }
+        ]}
+        image=""
+        updateTags={callback}
+      />
+    )
+
+    const removeBtn = screen.getByTestId('remove-button')
+    expect(removeBtn).toBeInTheDocument()
+    removeBtn.click()
+
+    expect(callback).toHaveBeenCalledWith([])
+  })
+
+  it('should edit it when double clicking on it', () => {
+    const callback = jest.fn()
+
+    render(
+      <ImgTagger
+        tags={[
+          {
+            description: 'to edit',
+            zone: { top: 0, left: 0, width: 10, height: 20 }
+          }
+        ]}
+        image=""
+        updateTags={callback}
+      />
+    )
+
+    const toBeEdited = screen.getByTitle('to edit')
+    expect(toBeEdited).toBeInTheDocument()
+    userEvent.dblClick(toBeEdited)
 
     const zone = screen.getByTestId('zone-to-tag')
     expect(zone).toBeInTheDocument()

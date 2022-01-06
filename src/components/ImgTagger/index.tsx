@@ -1,4 +1,10 @@
-import { MouseEvent, SyntheticEvent, useState } from 'react'
+import {
+  Dispatch,
+  MouseEvent,
+  SetStateAction,
+  SyntheticEvent,
+  useState
+} from 'react'
 import ResizableRect from 'react-resizable-rotatable-draggable'
 
 import * as S from './styles'
@@ -17,9 +23,11 @@ export interface Tag {
 
 interface Props {
   image: string
+  tags: Tag[]
+  updateTags: Dispatch<SetStateAction<Tag[]>>
 }
 
-const ImgTagger = ({ image }: Props) => {
+const ImgTagger = ({ image, tags, updateTags }: Props) => {
   const [zone, setZone] = useState<Zone>({
     width: 0,
     height: 0,
@@ -64,6 +72,23 @@ const ImgTagger = ({ image }: Props) => {
       left: zone.left + deltaX,
       top: zone.top + deltaY
     })
+  }
+
+  const editTag = (event: MouseEvent, index: number) => {
+    if (!tags[index]) {
+      return
+    }
+    const tag = tags[index]
+    setZone({ ...tag.zone })
+    removeTag(event, index)
+  }
+
+  const removeTag = (event: MouseEvent, index: number) => {
+    if (!tags || tags.length === 0) {
+      return
+    }
+    tags.splice(index, 1)
+    updateTags([...tags])
   }
 
   const setBoundingClientRect = ({
@@ -115,6 +140,19 @@ const ImgTagger = ({ image }: Props) => {
             />
           </span>
         )}
+        {tags.map((tag, index) => (
+          <S.Tag
+            key={index}
+            zone={tag.zone}
+            title={tag.description}
+            onDoubleClick={(event) => editTag(event, index)}
+          >
+            <S.Remove
+              data-testid="remove-button"
+              onClick={(event) => removeTag(event, index)}
+            />
+          </S.Tag>
+        ))}
       </S.Tagger>
     </S.Wrapper>
   )

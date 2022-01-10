@@ -8,4 +8,5 @@ export const Wrapper = styled.main`
 
 export const Head = styled.div`
   display: flex;
+  align-items: end;
 `

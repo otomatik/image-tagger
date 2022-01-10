@@ -14,7 +14,6 @@ export const Default: Story = () => (
         zone: { top: 0, left: 0, width: 10, height: 20 }
       }
     ]}
-    disabled={false}
-    image=""
+    image="fake image"
   />
 )

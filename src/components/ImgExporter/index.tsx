@@ -6,13 +6,17 @@ import { Tag } from '../ImgTagger'
 import { Button } from 'rebass'
 
 interface Props {
-  disabled: boolean
-  image: string
+  image: string | null
   tags: Tag[]
 }
 
-const ImgExporter = ({ image, tags, disabled }: Props) => {
+const ImgExporter = ({ image, tags }: Props) => {
+  const disabled = !image || tags.length === 0
+
   const onSave = () => {
+    if (!image) {
+      return
+    }
     const data = JSON.stringify({ image, tags })
     const blob = new Blob([data], {
       type: 'application/json;charset=utf-8'

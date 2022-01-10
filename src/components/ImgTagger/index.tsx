@@ -24,56 +24,89 @@ export interface Tag {
 }
 
 interface Props {
-  image: string
+  image: string | null
   tags: Tag[]
   updateTags: Dispatch<SetStateAction<Tag[]>>
+  zoneWidth?: number
+  zoneHeight?: number
 }
 
-const ImgTagger = ({ image, tags, updateTags }: Props) => {
-  const [zone, setZone] = useState<Zone>({
-    width: 0,
-    height: 0,
-    left: 0,
-    top: 0
-  })
+const DEFAULT_WIDTH = 60
+const DEFAULT_HEIGHT = 60
+const DEFAULT_DESCRIPTION = ''
+
+const ImgTagger = ({
+  image,
+  tags,
+  updateTags,
+  zoneWidth = DEFAULT_WIDTH,
+  zoneHeight = DEFAULT_HEIGHT
+}: Props) => {
+  const initialZone = { width: 0, height: 0, top: 0, left: 0 }
+  const [zone, setZone] = useState<Zone>(initialZone)
   const [limits, setLimits] = useState({
     top: 0,
     left: 0,
     right: 0,
     bottom: 0
   })
-  const [pendingDescription, setPendingDescription] = useState<string>('')
+
+  const [pendingDescription, setPendingDescription] = useState<string>(
+    DEFAULT_DESCRIPTION
+  )
+
+  const restrictLeftLimitToImageBounds = (
+    clientX: number,
+    bounds: DOMRect
+  ): number => {
+    const left = Math.max(clientX - bounds.left - zoneWidth / 2, 0)
+    const isOutOnRight = clientX - bounds.left + zoneWidth / 2 > bounds.width
+    return isOutOnRight ? limits.right - zoneWidth : left
+  }
+
+  const restrictTopLimitToImageBounds = (
+    clientY: number,
+    bounds: DOMRect
+  ): number => {
+    const top = Math.max(clientY - bounds.top - zoneHeight / 2, 0)
+    const isOutOnBottom = clientY - bounds.top + zoneHeight / 2 > bounds.height
+    return isOutOnBottom ? limits.bottom - zoneHeight : top
+  }
 
   const createZone = (event: MouseEvent<HTMLElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect()
-    const width = 60
-    const height = 60
-    let left = Math.max(event.clientX - bounds.left - width / 2, 0)
-    if (event.clientX - bounds.left + width / 2 > bounds.width) {
-      left = limits.right - width
-    }
-    let top = Math.max(event.clientY - bounds.top - height / 2, 0)
-    if (event.clientY - bounds.top + height / 2 > bounds.height) {
-      top = limits.bottom - height
-    }
+    const left = restrictLeftLimitToImageBounds(event.clientX, bounds)
+    const top = restrictTopLimitToImageBounds(event.clientY, bounds)
     setZone({
-      width,
-      height,
+      width: zoneWidth,
+      height: zoneHeight,
       left,
       top
     })
   }
 
   const updateZone = (deltaX: number, deltaY: number) => {
-    if (zone.left + deltaX < limits.left) return
-    if (zone.left + deltaX > limits.right - zone.width) return
-    if (zone.top + deltaY < limits.top) return
-    if (zone.top + deltaY > limits.bottom - zone.height) return
+    const newLeftPosition = zone.left + deltaX
+    const newTopPosition = zone.top + deltaY
+
+    const outsideLeftBorder = newLeftPosition < limits.left
+    const outsideRightBorder = newLeftPosition > limits.right - zone.width
+    const outsideTopBorder = newTopPosition < limits.top
+    const outsideBottomBorder = newTopPosition > limits.bottom - zone.height
+
+    if (
+      outsideLeftBorder ||
+      outsideRightBorder ||
+      outsideTopBorder ||
+      outsideBottomBorder
+    ) {
+      return
+    }
 
     setZone({
       ...zone,
-      left: zone.left + deltaX,
-      top: zone.top + deltaY
+      left: newLeftPosition,
+      top: newTopPosition
     })
   }
 
@@ -81,17 +114,17 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
     updateTags([...tags, tag])
   }
 
-  const editTag = (event: MouseEvent, index: number) => {
-    if (!tags[index]) {
+  const editTag = (index: number) => {
+    const tag = tags[index]
+    if (!tag) {
       return
     }
-    const tag = tags[index]
     setPendingDescription(tag.description)
     setZone({ ...tag.zone })
-    removeTag(event, index)
+    removeTag(index)
   }
 
-  const removeTag = (event: MouseEvent, index: number) => {
+  const removeTag = (index: number) => {
     if (!tags || tags.length === 0) {
       return
     }
@@ -107,8 +140,8 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
   }
 
   const reset = () => {
-    setZone({ width: 0, height: 0, top: 0, left: 0 })
-    setPendingDescription('')
+    setZone(initialZone)
+    setPendingDescription(DEFAULT_DESCRIPTION)
   }
 
   const setBoundingClientRect = ({
@@ -145,8 +178,23 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
 
   return (
     <S.Wrapper>
+      {image && (
+        <DescriptionInput
+          value={pendingDescription}
+          onChange={setPendingDescription}
+          onConfirm={confirmDescription}
+          onCancel={reset}
+          disabled={zone.width === 0 && zone.height === 0}
+        />
+      )}
       <S.Tagger>
-        <img src={image} onLoad={setBoundingClientRect} onClick={createZone} />
+        {image && (
+          <img
+            src={image}
+            onLoad={setBoundingClientRect}
+            onClick={createZone}
+          />
+        )}
         {zone.width > 0 && zone.height > 0 && (
           <span data-testid="zone-to-tag">
             <ResizableRect
@@ -165,24 +213,15 @@ const ImgTagger = ({ image, tags, updateTags }: Props) => {
             key={index}
             zone={tag.zone}
             title={tag.description}
-            onDoubleClick={(event) => editTag(event, index)}
+            onDoubleClick={(_) => editTag(index)}
           >
             <S.Remove
               data-testid="remove-button"
-              onClick={(event) => removeTag(event, index)}
+              onClick={(_) => removeTag(index)}
             />
           </S.Tag>
         ))}
       </S.Tagger>
-      {image === '' ? null : (
-        <DescriptionInput
-          value={pendingDescription}
-          onChange={setPendingDescription}
-          onConfirm={confirmDescription}
-          onCancel={reset}
-          disabled={zone.width === 0 && zone.height === 0}
-        />
-      )}
     </S.Wrapper>
   )
 }

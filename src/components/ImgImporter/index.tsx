@@ -1,5 +1,6 @@
 import React from 'react'
-import { Input } from '@rebass/forms'
+import { Input, Label } from '@rebass/forms'
+import * as S from './styles'
 
 import { Tag } from '../ImgTagger'
 
@@ -9,18 +10,19 @@ interface Props {
 }
 
 const ImgImporter = ({ dataImported, importFailed }: Props) => {
-  const onImport = (files: FileList | null) => {
+  const onImportImage = (files: FileList | null) => onImport(files, false)
+  const onImportJson = (files: FileList | null) => onImport(files, true)
+  const onImport = (files: FileList | null, isJson: boolean) => {
     if (!files || files.length < 1) {
       return
     }
     const file = files[0]
-    const isJsonFile = file.type === 'application/json'
 
     const onLoaded = () => {
       try {
         let image = reader.result as string
         let tags = []
-        if (isJsonFile) {
+        if (isJson) {
           const parsed = JSON.parse(image)
           image = parsed['image']
           tags = parsed['tags']
@@ -35,21 +37,40 @@ const ImgImporter = ({ dataImported, importFailed }: Props) => {
     reader.addEventListener('load', onLoaded)
     importFailed && reader.addEventListener('error', importFailed)
 
-    if (isJsonFile) {
+    if (isJson) {
       reader.readAsText(file)
     } else {
       reader.readAsDataURL(file)
     }
   }
   return (
-    <Input
-      title="Import"
-      type="file"
-      multiple={false}
-      data-testid="import-file-input"
-      onChange={(event) => onImport(event.target.files)}
-      mr={2}
-    />
+    <>
+      <S.Importer>
+        <Label htmlFor="image">Import an image:</Label>
+        <Input
+          title="Import image"
+          type="file"
+          accept="image/*"
+          name="image"
+          multiple={false}
+          data-testid="import-image-input"
+          onChange={(event) => onImportImage(event.target.files)}
+          mt={2}
+        />
+      </S.Importer>
+      <S.Importer>
+        <Label htmlFor="json">or a Json file:</Label>
+        <Input
+          title="Import json"
+          type="file"
+          name="json"
+          multiple={false}
+          data-testid="import-json-input"
+          onChange={(event) => onImportJson(event.target.files)}
+          mt={2}
+        />
+      </S.Importer>
+    </>
   )
 }
 

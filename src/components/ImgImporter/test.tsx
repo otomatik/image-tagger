@@ -53,7 +53,7 @@ describe('<ImgImporter />', () => {
 
     render(<ImgImporter dataImported={callback} />)
 
-    const input = screen.getByTestId('import-file-input')
+    const input = screen.getByTestId('import-json-input')
 
     userEvent.upload(input, [
       new File([fakeContent], 'image.json', { type: 'application/json' })
@@ -71,7 +71,7 @@ describe('<ImgImporter />', () => {
 
     render(<ImgImporter dataImported={callback} />)
 
-    const input = screen.getByTestId('import-file-input')
+    const input = screen.getByTestId('import-image-input')
 
     userEvent.upload(input, [
       new File([fakeContent], 'hello.png', { type: 'image/png' })

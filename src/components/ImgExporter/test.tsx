@@ -22,7 +22,7 @@ describe('<ImgExporter />', () => {
     ]
     const blob = new Blob([JSON.stringify({ image, tags })])
 
-    render(<ImgExporter image={image} tags={tags} disabled={false} />)
+    render(<ImgExporter image={image} tags={tags} />)
 
     screen.getByRole('button').click()
 
@@ -32,7 +32,7 @@ describe('<ImgExporter />', () => {
   })
 
   it('should disable the button', () => {
-    render(<ImgExporter image={'fake image'} tags={[]} disabled={true} />)
+    render(<ImgExporter image={'fake image'} tags={[]} />)
 
     const button = screen.getByRole('button')
 
